@@ -1,0 +1,109 @@
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useHistory } from 'react-router-dom'; // Adicionando o useHistory para navegação
+
+// Reusable Input Component
+const Input = ({ label, type = 'text', value, onChange, placeholder }) => {
+  return (
+    <div className="mb-4">
+      <label className="block text-sm font-medium mb-1 text-white">{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full p-2 border rounded-lg focus:outline-none focus:ring focus:ring-orange-500"
+      />
+    </div>
+  );
+};
+
+// Acessar Agora Page Component
+const LoginPage = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const history = useHistory(); // Instanciando o useHistory
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    try {
+      // Enviar dados para o PHP
+      const response = await fetch('http://localhost/seu_arquivo/verifica_login.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert('Login successful!');
+        // Redirecionar ou processar login bem-sucedido
+        history.push('/home'); // Exemplo de redirecionamento após login
+      } else {
+        setError(data.message || 'Invalid credentials');
+      }
+    } catch (error) {
+      setError('An error occurred. Please try again.');
+    }
+  };
+
+  // Função para redirecionar para a página de registro
+  const redirectToRegister = () => {
+    history.push('/registra');
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-black">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Card className="max-w-md w-full bg-orange-500">
+          <CardContent className="p-6">
+            <h1 className="text-xl font-bold mb-4 text-center text-white">Senac Learning</h1>
+            {error && <div className="text-red-500 mb-4">{error}</div>}
+            <form onSubmit={handleLogin}>
+              <Input
+                label="Email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+              />
+              <Input
+                label="Password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+              />
+              <Button className="w-full bg-black hover:bg-gray-800 text-white p-2 rounded-full mt-4">
+                Acessar Agora
+              </Button>
+              <div className="text-center mt-4">
+                <a href="#" className="text-white text-sm underline hover:text-gray-300">Esqueci a Senha</a>
+              </div>
+            </form>
+            <div className="text-center mt-4">
+              <button 
+                onClick={redirectToRegister} 
+                className="text-white text-sm underline hover:text-gray-300"
+              >
+                Registre-se
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </div>
+  );
+};
+
+export default LoginPage;
